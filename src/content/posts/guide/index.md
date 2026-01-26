@@ -2,13 +2,11 @@
 title: Simple Guides for Marrakesh Sentinel
 published: 2026-10-01
 description: "How to use this blog template."
-image: "./cover.jpeg"
+image: "https://images.unsplash.com/photo-1768742574399-bf73e164336d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 tags: ["Marrakesh Sentinel", "Blogging", "Customization"]
 category: Guides
 draft: false
 ---
-
-> Cover image source: [Source](https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/208fc754-890d-4adb-9753-2c963332675d/width=2048/01651-1456859105-(colour_1.5),girl,_Blue,yellow,green,cyan,purple,red,pink,_best,8k,UHD,masterpiece,male%20focus,%201boy,gloves,%20ponytail,%20long%20hair,.jpeg)
 
 This blog template is built with [Astro](https://astro.build/). For the things that are not mentioned in this guide, you may find the answers in the [Astro Docs](https://docs.astro.build/).
 
