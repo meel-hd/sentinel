@@ -34,7 +34,7 @@ const maxLevel = siteConfig.toc.depth;
 {isPostsRoute &&
 <table-of-contents class:list={[className, "group"]}>
     {headings.filter((heading) => heading.depth < minDepth + maxLevel).map((heading) =>
-            <a href={`#${heading.slug}`} class="px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl
+            <a href={`#${heading.slug}`} class="toc-link px-2 flex gap-2 relative transition w-full min-h-9 rounded-xl
         hover:bg-[var(--toc-btn-hover)] active:bg-[var(--toc-btn-active)] py-2
     ">
                 <div class:list={["transition w-5 h-5 shrink-0 rounded-lg text-xs flex items-center justify-center font-bold",
@@ -49,101 +49,78 @@ const maxLevel = siteConfig.toc.depth;
                     {heading.depth == minDepth + 1 && <div class="transition w-2 h-2 rounded-[0.1875rem] bg-[var(--toc-badge-bg)]"></div>}
                     {heading.depth == minDepth + 2 && <div class="transition w-1.5 h-1.5 rounded-sm bg-black/5 dark:bg-white/10"></div>}
                 </div>
-                <div class:list={["transition text-sm", {
+                <div class:list={["toc-link-label transition text-sm", {
                     "text-50": heading.depth == minDepth || heading.depth == minDepth + 1,
                     "text-30": heading.depth == minDepth + 2,
                 }]}>{removeTailingHash(heading.text)}</div>
             </a>
     )}
-    <div id="active-indicator" style="opacity: 0" class:list={[{'hidden': headings.length == 0}, "-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all " +
-        "group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"]}></div>
 </table-of-contents>}
 
 <script is:inline>
 class TableOfContents extends HTMLElement {
     tocEl = null;
-    visibleClass = "visible";
+    currentClass = "toc-link-current";
     observer;
     anchorNavTarget = null;
     headingIdxMap = new Map();
     headings = [];
-    sections = [];
     tocEntries = [];
     active = [];
-    activeIndicator = null;
 
     constructor() {
         super();
         this.observer = new IntersectionObserver(
-            this.markVisibleSection, { threshold: 0 }
+            this.markVisibleSection, { rootMargin: "0px 0px -65% 0px", threshold: 0 }
         );
     };
 
     markVisibleSection = (entries) => {
         entries.forEach((entry) => {
-            const id = entry.target.children[0]?.getAttribute("id");
+            const id = entry.target.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
             if (idx != undefined)
                 this.active[idx] = entry.isIntersecting;
 
-            if (entry.isIntersecting && this.anchorNavTarget == entry.target.firstChild)
+            if (entry.isIntersecting && this.anchorNavTarget == entry.target)
                 this.anchorNavTarget = null;
         });
 
-        if (!this.active.includes(true))
-            this.fallback();
         this.update();
     };
 
-    toggleActiveHeading = () => {
-        let i = this.active.length - 1;
-        let min = this.active.length - 1, max = -1;
-        while (i >= 0 && !this.active[i]) {
-            this.tocEntries[i].classList.remove(this.visibleClass);
-            i--;
+    getCurrentIndex = () => {
+        for (let i = this.active.length - 1; i >= 0; i--) {
+            if (this.active[i]) return i;
         }
-        while (i >= 0 && this.active[i]) {
-            this.tocEntries[i].classList.add(this.visibleClass);
-            min = Math.min(min, i);
-            max = Math.max(max, i);
-            i--;
-        }
-        while (i >= 0) {
-            this.tocEntries[i].classList.remove(this.visibleClass);
-            i--;
-        }
-        if (min > max) {
-            this.activeIndicator?.setAttribute("style", `opacity: 0`);
-        } else {
-            // let top = this.tocEntries[min].getBoundingClientRect().top - parentOffset + scrollOffset;
-            // let bottom = this.tocEntries[max].getBoundingClientRect().bottom - parentOffset + scrollOffset;
-            // this.activeIndicator?.setAttribute("style", `top: ${top}px; height: ${bottom - top}px`);
-        }
+
+        return this.fallback();
     };
 
-    scrollToActiveHeading = () => {
-        // If the TOC widget can accommodate both the topmost
-        // and bottommost items, scroll to the topmost item. 
-        // Otherwise, scroll to the bottommost one.
+    toggleActiveHeading = () => {
+        const currentIdx = this.getCurrentIndex();
 
+        for (let i = 0; i < this.tocEntries.length; i++) {
+            const isCurrent = i === currentIdx;
+            this.tocEntries[i].classList.toggle(this.currentClass, isCurrent);
+            if (isCurrent) {
+                this.tocEntries[i].setAttribute("aria-current", "true");
+            } else {
+                this.tocEntries[i].removeAttribute("aria-current");
+            }
+        }
+
+        return currentIdx;
+    };
+
+    scrollToActiveHeading = (currentIdx) => {
         if (this.anchorNavTarget || !this.tocEl) return;
-        const activeHeading =
-            document.querySelectorAll(`#toc .${this.visibleClass}`);
-        if (!activeHeading.length) return;
-
-        const topmost = activeHeading[0];
-        const bottommost = activeHeading[activeHeading.length - 1];
-        const tocHeight = this.tocEl.clientHeight;
-
-        let top;
-        if (bottommost.getBoundingClientRect().bottom -
-            topmost.getBoundingClientRect().top < 0.9 * tocHeight)
-            top = topmost.offsetTop - 32;
-        else
-            top = bottommost.offsetTop - tocHeight * 0.8;
+        if (currentIdx == null || currentIdx < 0) return;
+        const currentHeading = this.tocEntries[currentIdx];
+        if (!currentHeading) return;
 
         this.tocEl.scrollTo({
-            top,
+            top: Math.max(currentHeading.offsetTop - this.tocEl.clientHeight * 0.35, 0),
             left: 0,
             behavior: "smooth",
         });
@@ -151,31 +128,28 @@ class TableOfContents extends HTMLElement {
 
     update = () => {
         requestAnimationFrame(() => {
-            this.toggleActiveHeading();
-            // requestAnimationFrame(() => {
-            this.scrollToActiveHeading();
-            // });
+            const currentIdx = this.toggleActiveHeading();
+            this.scrollToActiveHeading(currentIdx);
         });
     };
 
     fallback = () => {
-        if (!this.sections.length) return;
+        if (!this.headings.length) return -1;
 
-        for (let i = 0; i < this.sections.length; i++) {
-            let offsetTop = this.sections[i].getBoundingClientRect().top;
-            let offsetBottom = this.sections[i].getBoundingClientRect().bottom;
+        const activationLine = window.innerHeight * 0.35;
+        let currentIdx = 0;
 
-            if (this.isInRange(offsetTop, 0, window.innerHeight)
-                || this.isInRange(offsetBottom, 0, window.innerHeight)
-                || (offsetTop < 0 && offsetBottom > window.innerHeight)) {                    
-                this.markActiveHeading(i);
+        for (let i = 0; i < this.headings.length; i++) {
+            const heading = this.headings[i];
+            if (!(heading instanceof HTMLElement)) continue;
+            if (heading.getBoundingClientRect().top <= activationLine) {
+                currentIdx = i;
+            } else {
+                break;
             }
-            else if (offsetTop > window.innerHeight) break;
         }
-    };
 
-    markActiveHeading = (idx)=> {
-        this.active[idx] = true;
+        return currentIdx;
     };
 
     handleAnchorClick = (event) => {
@@ -184,18 +158,28 @@ class TableOfContents extends HTMLElement {
             .find((element) => element instanceof HTMLAnchorElement);
 
         if (anchor) {
+            event.preventDefault();
             const id = decodeURIComponent(anchor.hash?.substring(1));
             const idx = this.headingIdxMap.get(id);
             if (idx !== undefined) {
-                this.anchorNavTarget = this.headings[idx];
+                const heading = this.headings[idx];
+                this.anchorNavTarget = heading;
+                if (heading instanceof HTMLElement) {
+                    const navbarHeight =
+                        document.getElementById("navbar-wrapper")?.getBoundingClientRect().height ?? 0;
+                    const top =
+                        window.scrollY + heading.getBoundingClientRect().top - navbarHeight - 24;
+
+                    window.scrollTo({
+                        top: Math.max(top, 0),
+                        behavior: "smooth",
+                    });
+                    window.history.replaceState(null, "", `#${encodeURIComponent(id)}`);
+                }
             } else {
                 this.anchorNavTarget = null;
             }
         }
-    };
-
-    isInRange(value, min, max) {
-        return min < value && value < max;
     };
 
     connectedCallback() {
@@ -221,39 +205,33 @@ class TableOfContents extends HTMLElement {
             capture: true,
         });
 
-        this.activeIndicator = document.getElementById("active-indicator");
-
         this.tocEntries = Array.from(
             document.querySelectorAll("#toc a[href^='#']")
         );
 
         if (this.tocEntries.length === 0) return;
 
-        this.sections = new Array(this.tocEntries.length);
         this.headings = new Array(this.tocEntries.length);
         for (let i = 0; i < this.tocEntries.length; i++) {
             const id = decodeURIComponent(this.tocEntries[i].hash?.substring(1));
             const heading = document.getElementById(id);
-            const section = heading?.parentElement;
-            if (heading instanceof HTMLElement && section instanceof HTMLElement) {
+            if (heading instanceof HTMLElement) {
                 this.headings[i] = heading;
-                this.sections[i] = section;
                 this.headingIdxMap.set(id, i);
             }
         }
         this.active = new Array(this.tocEntries.length).fill(false);
 
-        this.sections.forEach((section) =>
-            this.observer.observe(section)
+        this.headings.forEach((heading) => heading instanceof HTMLElement &&
+            this.observer.observe(heading)
         );
 
-        this.fallback();
         this.update();
     };
 
     disconnectedCallback() {
-        this.sections.forEach((section) =>
-            this.observer.unobserve(section)
+        this.headings.forEach((heading) => heading instanceof HTMLElement &&
+            this.observer.unobserve(heading)
         );
         this.observer.disconnect();
         this.tocEl?.removeEventListener("click", this.handleAnchorClick);

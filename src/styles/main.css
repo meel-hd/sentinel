@@ -67,6 +67,17 @@
 
     #toc-inner-wrapper {
         mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
+        scroll-padding-top: 2rem;
+        scroll-padding-bottom: 2rem;
+        touch-action: pan-y;
+    }
+
+    .toc-link-current {
+        @apply bg-[var(--toc-btn-hover)] text-[var(--toc-item-active)];
+    }
+
+    .toc-link-current .toc-link-label {
+        @apply font-semibold text-[var(--toc-item-active)];
     }
 
     .hide-scrollbar {

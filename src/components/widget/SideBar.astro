@@ -30,7 +30,7 @@ const showToc = siteConfig.toc.enable && headings.length > 0;
                 class:list={["z-0 hidden md:block transition w-full onload-animation", {"toc-hide": siteConfig.banner.enable}]}
             >
                 <div class="relative max-w-[var(--page-width)] mx-auto">
-                    <div id="toc-inner-wrapper" class="h-[calc(100vh_-_26rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar">
+                    <div id="toc-inner-wrapper" class="pointer-events-auto h-[calc(100vh_-_26rem)] overflow-y-auto overflow-x-hidden overscroll-contain hide-scrollbar">
                         <div id="toc" class="w-full h-full transition-swup-fade ">
                             <div class="h-8 w-full"></div>
                             <TOC headings={headings}></TOC>
