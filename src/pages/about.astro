@@ -6,7 +6,7 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-const aboutPost = await getEntry("spec", "about");
+const aboutPost = await getEntry("spec", "about.md");
 
 if (!aboutPost) {
 	throw new Error("About page content not found");

@@ -31,6 +31,9 @@ export default defineConfig({
     site: "https://marrakeshsentinel.com/",
     base: "/",
     trailingSlash: "always",
+    legacy: {
+        collectionsBackwardsCompat: true,
+    },
     integrations: [tailwind({
         nesting: true,
 		}), swup({

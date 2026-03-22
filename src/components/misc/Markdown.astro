@@ -13,9 +13,9 @@ const className = Astro.props.class;
     <slot/>
 </div>
 
-<script>
-document.addEventListener("click", function (e: MouseEvent) {
-    const target = e.target as Element | null;
+<script is:inline>
+document.addEventListener("click", function (e) {
+    const target = e.target;
     if (target && target.classList.contains("copy-btn")) {
         const preEle = target.closest("pre");
         const codeEle = preEle?.querySelector("code");

@@ -59,18 +59,18 @@ const maxLevel = siteConfig.toc.depth;
         "group-hover:bg-transparent border-2 border-[var(--toc-btn-hover)] group-hover:border-[var(--toc-btn-active)] border-dashed"]}></div>
 </table-of-contents>}
 
-<script>
+<script is:inline>
 class TableOfContents extends HTMLElement {
-    tocEl: HTMLElement | null = null;
+    tocEl = null;
     visibleClass = "visible";
-    observer: IntersectionObserver;
-    anchorNavTarget: HTMLElement | null = null;
-    headingIdxMap = new Map<string, number>();
-    headings: HTMLElement[] = [];
-    sections: HTMLElement[] = [];
-    tocEntries: HTMLAnchorElement[] = [];
-    active: boolean[] = [];
-    activeIndicator: HTMLElement | null = null;
+    observer;
+    anchorNavTarget = null;
+    headingIdxMap = new Map();
+    headings = [];
+    sections = [];
+    tocEntries = [];
+    active = [];
+    activeIndicator = null;
 
     constructor() {
         super();
@@ -79,7 +79,7 @@ class TableOfContents extends HTMLElement {
         );
     };
 
-    markVisibleSection = (entries: IntersectionObserverEntry[]) => {
+    markVisibleSection = (entries) => {
         entries.forEach((entry) => {
             const id = entry.target.children[0]?.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
@@ -115,8 +115,6 @@ class TableOfContents extends HTMLElement {
         if (min > max) {
             this.activeIndicator?.setAttribute("style", `opacity: 0`);
         } else {
-            let parentOffset = this.tocEl?.getBoundingClientRect().top || 0;
-            let scrollOffset = this.tocEl?.scrollTop || 0;
             // let top = this.tocEntries[min].getBoundingClientRect().top - parentOffset + scrollOffset;
             // let bottom = this.tocEntries[max].getBoundingClientRect().bottom - parentOffset + scrollOffset;
             // this.activeIndicator?.setAttribute("style", `top: ${top}px; height: ${bottom - top}px`);
@@ -130,7 +128,7 @@ class TableOfContents extends HTMLElement {
 
         if (this.anchorNavTarget || !this.tocEl) return;
         const activeHeading =
-            document.querySelectorAll<HTMLDivElement>(`#toc .${this.visibleClass}`);
+            document.querySelectorAll(`#toc .${this.visibleClass}`);
         if (!activeHeading.length) return;
 
         const topmost = activeHeading[0];
@@ -176,11 +174,11 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    markActiveHeading = (idx: number)=> {
+    markActiveHeading = (idx)=> {
         this.active[idx] = true;
     };
 
-    handleAnchorClick = (event: Event) => {
+    handleAnchorClick = (event) => {
         const anchor = event
             .composedPath()
             .find((element) => element instanceof HTMLAnchorElement);
@@ -196,7 +194,7 @@ class TableOfContents extends HTMLElement {
         }
     };
 
-    isInRange(value: number, min: number, max: number) {
+    isInRange(value, min, max) {
         return min < value && value < max;
     };
 
@@ -226,7 +224,7 @@ class TableOfContents extends HTMLElement {
         this.activeIndicator = document.getElementById("active-indicator");
 
         this.tocEntries = Array.from(
-            document.querySelectorAll<HTMLAnchorElement>("#toc a[href^='#']")
+            document.querySelectorAll("#toc a[href^='#']")
         );
 
         if (this.tocEntries.length === 0) return;

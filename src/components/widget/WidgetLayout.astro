@@ -36,7 +36,7 @@ const className = Astro.props.class;
     }
 </style>
 
-<script>
+<script is:inline>
     class WidgetLayout extends HTMLElement {
         constructor() {
             super();
@@ -47,10 +47,12 @@ const className = Astro.props.class;
             const id = this.dataset.id;
             const btn = this.querySelector('.expand-btn');
             const wrapper = this.querySelector(`#${id}`)
-            btn!.addEventListener('click', () => {
-                wrapper!.classList.remove('collapsed');
-                btn!.classList.add('hidden');
-            })
+            if (btn && wrapper) {
+                btn.addEventListener('click', () => {
+                    wrapper.classList.remove('collapsed');
+                    btn.classList.add('hidden');
+                })
+            }
         }
     }
 
