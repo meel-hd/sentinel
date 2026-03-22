@@ -47,6 +47,43 @@ const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 	}
 };
 
+const stripMarkdown = (text: string): string =>
+	text
+		.replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		.replace(/```[\s\S]*?```/g, " ")
+		.replace(/~~~[\s\S]*?~~~/g, " ")
+		.replace(/`([^`]+)`/g, "$1")
+		.replace(/^#{1,6}\s+/gm, "")
+		.replace(/^>\s?/gm, "")
+		.replace(/^[-*+]\s+/gm, "")
+		.replace(/^\d+\.\s+/gm, "")
+		.replace(/(\*\*|__)(.*?)\1/g, "$2")
+		.replace(/(\*|_)(.*?)\1/g, "$2")
+		.replace(/~~(.*?)~~/g, "$1");
+
+const sanitizeExcerpt = (excerpt: string): string => {
+	const normalized = stripMarkdown(excerpt).replace(/\s+/g, " ").trim();
+	const template = document.createElement("template");
+	template.innerHTML = normalized;
+
+	const keepMarkOnly = (node: ChildNode): string => {
+		if (node.nodeType === Node.TEXT_NODE) {
+			return node.textContent ?? "";
+		}
+
+		if (node.nodeType !== Node.ELEMENT_NODE) {
+			return "";
+		}
+
+		const element = node as HTMLElement;
+		const children = Array.from(element.childNodes).map(keepMarkOnly).join("");
+		return element.tagName === "MARK" ? `<mark>${children}</mark>` : children;
+	};
+
+	return Array.from(template.content.childNodes).map(keepMarkOnly).join("");
+};
+
 const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 	if (!keyword) {
 		setPanelVisibility(false, isDesktop);
@@ -181,7 +218,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
                 {item.meta.title}<Icon icon="fa6-solid:chevron-right" class="transition text-[0.75rem] translate-x-1 my-auto text-[var(--primary)]"></Icon>
             </div>
             <div class="transition text-sm text-50">
-                {@html item.excerpt}
+                {@html sanitizeExcerpt(item.excerpt)}
             </div>
         </a>
     {/each}

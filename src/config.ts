@@ -12,11 +12,11 @@ export const siteConfig: SiteConfig = {
 	subtitle: "Ideas that matter.",
 	lang: "en",
 	themeColor: {
-		hue: 285,
-		fixed: false,
+		hue: 45,
+		fixed: true,
 	},
 	banner: {
-		enable: true,
+		enable: false,
 		src: "https://images.unsplash.com/photo-1619252584172-a83a949b6efd?q=80&w=2114&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 		position: "center",
 		credit: {
@@ -37,11 +37,11 @@ export const navBarConfig: NavBarConfig = {
 		LinkPreset.Home,
 		LinkPreset.Archive,
 		LinkPreset.About,
-		{
-			name: "GitHub",
-			url: "https://github.com/meel-hd/sentinel",
-			external: true,
-		},
+		// {
+		// 	name: "GitHub",
+		// 	url: "https://github.com/meel-hd/sentinel",
+		// 	external: true,
+		// },
 	],
 };
 

@@ -7,13 +7,26 @@ import {
 import { expressiveCodeConfig } from "@/config";
 import type { LIGHT_DARK_MODE } from "@/types/config";
 
-export function getDefaultHue(): number {
-	const fallback = "250";
+function getThemeConfig() {
 	const configCarrier = document.getElementById("config-carrier");
-	return Number.parseInt(configCarrier?.dataset.hue || fallback, 10);
+	return {
+		hue: Number.parseInt(configCarrier?.dataset.hue || "250", 10),
+		fixed: configCarrier?.dataset.fixed === "true",
+	};
+}
+
+export function getDefaultHue(): number {
+	return getThemeConfig().hue;
+}
+
+export function isHueFixed(): boolean {
+	return getThemeConfig().fixed;
 }
 
 export function getHue(): number {
+	if (isHueFixed()) {
+		return getDefaultHue();
+	}
 	const stored = localStorage.getItem("hue");
 	return stored ? Number.parseInt(stored, 10) : getDefaultHue();
 }
