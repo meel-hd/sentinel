@@ -5,7 +5,7 @@
 
 A static website built with [Astro](https://astro.build).
 
-[**🖥️ Live **](https://marrakeshsentinel.com)
+[View](https://marrakeshsentinel.com)
 
 ## ✨ Features
 
